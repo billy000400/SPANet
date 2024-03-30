@@ -16,9 +16,6 @@ class JetReconstructionValidation(JetReconstructionNetwork):
     def __init__(self, options: Options, torch_script: bool = False):
         super(JetReconstructionValidation, self).__init__(options, torch_script)
         self.evaluator = SymmetricEvaluator(self.training_dataset.event_info)
-        if self.balance_particles:
-            self.particle_index_tensor_np = self.particle_index_tensor.cpu().detach().numpy()
-            self.particle_weights_tensor_np = self.particle_weights_tensor.cpu().detach().numpy()
         # self.validation_step_metrics_outputs = []
 
     @property
@@ -94,14 +91,11 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         metrics["validation_accuracy"] = metrics[f"jet/accuracy_{num_targets}_of_{num_targets}"]
 
 
-        jet_full_target_accuracies = np.zeros((batch_size), dtype=float)
-        for i in range(1, num_targets + 1):
-            has_i_target = num_particles == i
-            jet_full_target_accuracies[has_i_target] = jet_accuracies[has_i_target] / i
+        jet_full_target_accuracies = torch.from_numpy(jet_accuracies)/torch.from_numpy(num_particles)
 
-        weights = np.ones_like(jet_full_target_accuracies)
+        weights = torch.ones_like(jet_full_target_accuracies)
         if self.balance_particles:
-            class_indices = (stacked_masks * self.particle_index_tensor_np[..., np.newaxis]).sum(0)
+            class_indices = (stacked_masks * self.particle_index_tensor_np.unsqueeze(1)).sum(0)
             weights *= self.particle_weights_tensor_np[class_indices]
 
         metrics["validation_average_jet_accuracy"] = (jet_full_target_accuracies * weights).sum() / weights.sum()
