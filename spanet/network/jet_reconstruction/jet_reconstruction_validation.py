@@ -35,6 +35,7 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         }
 
     def compute_metrics(self, jet_predictions, particle_scores, stacked_targets, stacked_masks):
+        print("Start compute metrics")
         event_permutation_group = self.event_permutation_tensor.cpu().numpy()
         num_permutations = len(event_permutation_group)
         num_targets, batch_size = stacked_masks.shape
@@ -90,12 +91,11 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         # early stopping, hyperparameter optimization, learning rate scheduling, etc.
         metrics["validation_accuracy"] = metrics[f"jet/accuracy_{num_targets}_of_{num_targets}"]
 
+        print("start validation_average_jet_accuracy")
+
         jet_full_target_accuracies = jet_accuracies / np.clip(num_particles, a_min=1.0, a_max=None)
 
         weights = np.ones_like(jet_full_target_accuracies)
-        if self.balance_particles:
-            class_indices = (stacked_masks * self.particle_index_tensor.detach().cpu().numpy()[..., np.newaxis]).sum(0)
-            weights *= self.particle_weights_tensor.detach().cpu().numpy()[class_indices]
 
         metrics["validation_average_jet_accuracy"] = (jet_full_target_accuracies * weights).sum() / weights.sum()
 
@@ -103,6 +103,7 @@ class JetReconstructionValidation(JetReconstructionNetwork):
 
     def validation_step(self, batch, batch_idx) -> Dict[str, np.float32]:
         # Run the base prediction step
+        print("Start validation")
         sources, num_jets, targets, regression_targets, classification_targets = batch
         jet_predictions, particle_scores, regressions, classifications = self.predict(sources)
 
