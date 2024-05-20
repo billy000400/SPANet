@@ -92,12 +92,19 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         metrics["validation_accuracy"] = metrics[f"jet/accuracy_{num_targets}_of_{num_targets}"]
 
         print("start validation_average_jet_accuracy")
+        print("calc jfta")
 
         jet_full_target_accuracies = jet_accuracies / np.clip(num_particles, a_min=1.0, a_max=None)
 
+        print("init weight")
+
         weights = np.ones_like(jet_full_target_accuracies)
 
+        print('calc vaja')
+
         metrics["validation_average_jet_accuracy"] = (jet_full_target_accuracies * weights).sum() / weights.sum()
+
+        print("finishing vaja")
 
         return metrics
 
@@ -136,7 +143,11 @@ class JetReconstructionValidation(JetReconstructionNetwork):
                     prediction[:, indices] = np.sort(prediction[:, indices])
                     target[:, indices] = np.sort(target[:, indices])
 
+        print("before update")
+
         metrics.update(self.compute_metrics(jet_predictions, particle_scores, stacked_targets, stacked_masks))
+
+        print("after update")
 
         for key in regressions:
             delta = regressions[key] - regression_targets[key]
@@ -156,6 +167,8 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         for key in classifications:
             accuracy = (classifications[key] == classification_targets[key])
             self.log(f"CLASSIFICATION/{key}_accuracy", accuracy.mean(), sync_dist=True)
+
+        print("logging")
 
         for name, value in metrics.items():
             if not np.isnan(value):
