@@ -176,6 +176,8 @@ class JetReconstructionValidation(JetReconstructionNetwork):
 
         # self.validation_step_metrics_outputs.append(metrics)
 
+        print("after logging")
+
         return metrics
 
     def test_step(self, batch, batch_idx):
