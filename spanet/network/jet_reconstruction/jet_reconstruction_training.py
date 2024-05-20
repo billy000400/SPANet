@@ -204,11 +204,13 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ===================================================================================================
         # Network Forward Pass
         # ---------------------------------------------------------------------------------------------------
+        print("Before forward")
         outputs = self.forward(batch.sources)
 
         # ===================================================================================================
         # Initial log-likelihood loss for classification task
         # ---------------------------------------------------------------------------------------------------
+        print("Before symmetric_losses")
         symmetric_losses, best_indices = self.symmetric_losses(
             outputs.assignments,
             outputs.detections,
@@ -244,6 +246,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ===================================================================================================
         # Some basic logging
         # ---------------------------------------------------------------------------------------------------
+        print("Before basic logging")
         with torch.no_grad():
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
                 self.log(f"loss/{name}/assignment_loss", l, sync_dist=True)
@@ -260,6 +263,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ===================================================================================================
         # Start constructing the list of all computed loss terms.
         # ---------------------------------------------------------------------------------------------------
+        print("Before constructing loss terms")
         total_loss = []
 
         if self.options.assignment_loss_scale > 0:
@@ -285,6 +289,8 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ---------------------------------------------------------------------------------------------------
         total_loss = torch.cat([loss.view(-1) for loss in total_loss])
 
+        print("Before training log")
         self.log("loss/total_loss", total_loss.sum(), sync_dist=True)
+        print("Before return")
 
         return total_loss.mean()
