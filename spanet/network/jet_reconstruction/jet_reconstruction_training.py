@@ -250,6 +250,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         with torch.no_grad():
             print("Before looping over assigment loss")
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
+                print(name, l)
                 self.log(f"loss/{name}/assignment_loss", l, sync_dist=True, on_epoch=True)
 
             print("Before looping over detection loss")
