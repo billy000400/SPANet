@@ -248,15 +248,19 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ---------------------------------------------------------------------------------------------------
         print("Before basic logging")
         with torch.no_grad():
+            print("Before looping over assigment loss")
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
                 self.log(f"loss/{name}/assignment_loss", l, sync_dist=True, on_epoch=True)
 
+            print("Before looping over detection loss")
             for name, l in zip(self.training_dataset.assignments, detection_loss):
                 self.log(f"loss/{name}/detection_loss", l, sync_dist=True, on_epoch=True)
-
+            
+            print("Before checking isnan")
             if torch.isnan(assignment_loss).any():
                 raise ValueError("Assignment loss has diverged!")
 
+            print("Before checking isinf")
             if torch.isinf(assignment_loss).any():
                 raise ValueError("Assignment targets contain a collision.")
 
