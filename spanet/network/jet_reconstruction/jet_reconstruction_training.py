@@ -134,7 +134,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         kl_loss = (weights * kl_loss).sum() / masks.sum()
 
         with torch.no_grad():
-            self.log("loss/symmetric_loss", kl_loss, sync_dist=True)
+            self.log("loss/symmetric_loss", kl_loss, sync_dist=True, on_epoch=True)
             if torch.isnan(kl_loss):
                 raise ValueError("Symmetric KL Loss has diverged.")
 
@@ -167,7 +167,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
             current_loss = torch.mean(current_loss)
 
             with torch.no_grad():
-                self.log(f"loss/regression/{key}", current_loss, sync_dist=True)
+                self.log(f"loss/regression/{key}", current_loss, sync_dist=True, on_epoch=True)
 
             regression_terms.append(self.options.regression_loss_scale * current_loss)
 
@@ -196,7 +196,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
             classification_terms.append(self.options.classification_loss_scale * current_loss)
 
             with torch.no_grad():
-                self.log(f"loss/classification/{key}", current_loss, sync_dist=True)
+                self.log(f"loss/classification/{key}", current_loss, sync_dist=True, on_epoch=True)
 
         return total_loss + classification_terms
 
@@ -249,10 +249,10 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         print("Before basic logging")
         with torch.no_grad():
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
-                self.log(f"loss/{name}/assignment_loss", l, sync_dist=True)
+                self.log(f"loss/{name}/assignment_loss", l, sync_dist=True, on_epoch=True)
 
             for name, l in zip(self.training_dataset.assignments, detection_loss):
-                self.log(f"loss/{name}/detection_loss", l, sync_dist=True)
+                self.log(f"loss/{name}/detection_loss", l, sync_dist=True, on_epoch=True)
 
             if torch.isnan(assignment_loss).any():
                 raise ValueError("Assignment loss has diverged!")
@@ -290,7 +290,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         total_loss = torch.cat([loss.view(-1) for loss in total_loss])
 
         print("Before training log")
-        self.log("loss/total_loss", total_loss.sum(), sync_dist=True)
+        self.log("loss/total_loss", total_loss.sum(), sync_dist=True, on_epoch=True)
         print("Before return")
 
         return total_loss.mean()
