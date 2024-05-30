@@ -134,7 +134,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         kl_loss = (weights * kl_loss).sum() / masks.sum()
 
         with torch.no_grad():
-            self.log("loss/symmetric_loss", kl_loss, sync_dist=True, on_epoch=True)
+            self.log("loss/symmetric_loss", kl_loss, sync_dist=True)
             if torch.isnan(kl_loss):
                 raise ValueError("Symmetric KL Loss has diverged.")
 
@@ -167,7 +167,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
             current_loss = torch.mean(current_loss)
 
             with torch.no_grad():
-                self.log(f"loss/regression/{key}", current_loss, sync_dist=True, on_epoch=True)
+                self.log(f"loss/regression/{key}", current_loss, sync_dist=True)
 
             regression_terms.append(self.options.regression_loss_scale * current_loss)
 
@@ -196,21 +196,21 @@ class JetReconstructionTraining(JetReconstructionNetwork):
             classification_terms.append(self.options.classification_loss_scale * current_loss)
 
             with torch.no_grad():
-                self.log(f"loss/classification/{key}", current_loss, sync_dist=True, on_epoch=True)
+                self.log(f"loss/classification/{key}", current_loss, sync_dist=True)
 
         return total_loss + classification_terms
 
     def training_step(self, batch: Batch, batch_nb: int) -> Dict[str, Tensor]:
+        print("training_step starts: Begin forward")
         # ===================================================================================================
         # Network Forward Pass
         # ---------------------------------------------------------------------------------------------------
-        print("Before forward")
         outputs = self.forward(batch.sources)
+        print("Passed SPANet")
 
         # ===================================================================================================
         # Initial log-likelihood loss for classification task
         # ---------------------------------------------------------------------------------------------------
-        print("Before symmetric_losses")
         symmetric_losses, best_indices = self.symmetric_losses(
             outputs.assignments,
             outputs.detections,
@@ -246,30 +246,26 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ===================================================================================================
         # Some basic logging
         # ---------------------------------------------------------------------------------------------------
-        print("Before basic logging")
         with torch.no_grad():
-            print("Before looping over assigment loss")
+            print("logging assignment loss")
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
-                print(name, l)
-                self.log(f"loss/{name}/assignment_loss", l, sync_dist=True, on_epoch=True)
-                print("after logging", name)
+                self.log(f"loss/{name}/assignment_loss", l, sync_dist=True)
 
-            print("Before looping over detection loss")
+            print("logging detectioin loss")
             for name, l in zip(self.training_dataset.assignments, detection_loss):
-                self.log(f"loss/{name}/detection_loss", l, sync_dist=True, on_epoch=True)
-            
-            print("Before checking isnan")
+                self.log(f"loss/{name}/detection_loss", l, sync_dist=True)
+
+            print("check nan")
             if torch.isnan(assignment_loss).any():
                 raise ValueError("Assignment loss has diverged!")
 
-            print("Before checking isinf")
+            print("check inf")
             if torch.isinf(assignment_loss).any():
                 raise ValueError("Assignment targets contain a collision.")
 
         # ===================================================================================================
         # Start constructing the list of all computed loss terms.
         # ---------------------------------------------------------------------------------------------------
-        print("Before constructing loss terms")
         total_loss = []
 
         if self.options.assignment_loss_scale > 0:
@@ -295,8 +291,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # ---------------------------------------------------------------------------------------------------
         total_loss = torch.cat([loss.view(-1) for loss in total_loss])
 
-        print("Before training log")
-        self.log("loss/total_loss", total_loss.sum(), sync_dist=True, on_epoch=True)
-        print("Before return")
+        self.log("loss/total_loss", total_loss.sum(), sync_dist=True)
 
+        print("Returning from train_step")
         return total_loss.mean()
