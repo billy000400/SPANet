@@ -45,9 +45,12 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # TODO think of a way to avoid this memory transfer but keep permutation indices synced with checkpoint
         # Assuming event_permutation_tensor is on GPU and can be indexed directly
         permutation_losses = []
-        for i, permutation in enumerate(self.event_permutation_tensor):
+        for permutation in self.event_permutation_list:
             # Directly use GPU tensors for operations
-            permuted_targets = targets[permutation]
+            print("permutation", permutation)
+            print("targets", targets)
+            print(*permutation)
+            permuted_targets = [targets[i] for i in permutation] 
             perm_losses = [
                 self.particle_symmetric_loss(assignment, detection, target, mask)
                 for assignment, detection, (target, mask)
@@ -94,7 +97,7 @@ class JetReconstructionTraining(JetReconstructionNetwork):
                        for prediction, decoder in zip(assignments, self.branch_decoders)]
 
         # Convert the targets into a numpy array of tensors so we can use fancy indexing from numpy
-        targets = numpy_tensor_array(targets)
+        # targets = numpy_tensor_array(targets)
 
         # Compute the loss on every valid permutation of the targets
         symmetric_losses = self.compute_symmetric_losses(assignments, detections, targets)
