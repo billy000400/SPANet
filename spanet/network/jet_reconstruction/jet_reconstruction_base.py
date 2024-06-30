@@ -193,6 +193,7 @@ class JetReconstructionBase(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def train_dataloader(self) -> DataLoader:
+        print("train dataloader options", *self.dataloader_options.items())
         return self.dataloader(self.training_dataset, shuffle=True, drop_last=True, **self.dataloader_options)
 
     def val_dataloader(self) -> DataLoader:

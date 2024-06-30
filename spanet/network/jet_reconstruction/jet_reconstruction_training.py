@@ -47,9 +47,9 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         permutation_losses = []
         for permutation in self.event_permutation_list:
             # Directly use GPU tensors for operations
-            print("permutation", permutation)
-            print("targets", targets)
-            print(*permutation)
+            # print("permutation", permutation)
+            # print("targets", targets)
+            # print(*permutation)
             permuted_targets = [targets[i] for i in permutation] 
             perm_losses = [
                 self.particle_symmetric_loss(assignment, detection, target, mask)

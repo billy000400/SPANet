@@ -161,7 +161,7 @@ def main(
 
     # Create the final pytorch-lightning manager
     trainer = pl.Trainer(
-        accelerator="gpu" if options.num_gpu > 0 else "auto",
+        accelerator="gpu" if options.num_gpu > 0 else "cpu",
         devices=options.num_gpu if options.num_gpu > 0 else "auto",
         strategy="ddp" if options.num_gpu > 1 else "auto",
         precision="16-mixed" if fp16 else "32-true",
