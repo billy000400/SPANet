@@ -105,6 +105,7 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         metrics["validation_average_jet_accuracy"] = (jet_full_target_accuracies * weights).sum() / weights.sum()
 
         print("finishing vaja")
+        print("return from compute metrics")
 
         return metrics
 
@@ -177,6 +178,7 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         # self.validation_step_metrics_outputs.append(metrics)
 
         print("after logging")
+        print("return from validation step")
 
         return metrics
 
