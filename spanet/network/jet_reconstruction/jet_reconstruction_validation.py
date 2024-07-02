@@ -52,8 +52,11 @@ class JetReconstructionValidation(JetReconstructionNetwork):
 
             particle_accuracies[i] = stacked_masks[permutation] == particle_predictions
 
+        detect_assign_accuracies = jet_accuracies * particle_accuracies
+
         jet_accuracies = jet_accuracies.sum(1)
         particle_accuracies = particle_accuracies.sum(1)
+        detect_assign_accuracies = detect_assign_accuracies.sum(1)
 
         # Select the primary permutation which we will use for all other metrics.
         chosen_permutations = self.event_permutation_tensor[jet_accuracies.argmax(0)].T
@@ -64,6 +67,7 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         num_particles = stacked_masks.sum(0)
         jet_accuracies = jet_accuracies.max(0)
         particle_accuracies = particle_accuracies.max(0)
+        detect_assign_accuracies = detect_assign_accuracies.max(0)
 
         # Create the logging dictionaries
         with warnings.catch_warnings():
@@ -93,18 +97,20 @@ class JetReconstructionValidation(JetReconstructionNetwork):
 
         print("start validation_average_jet_accuracy")
         print("calc jfta")
+        
+        target_effciency = np.zeros((batch_size), dtype=float)
+        num_detected_matched_target = 0.0
+        num_total_target = 0.0
+        for i in range(1, num_targets + 1):
+            has_i_target = num_particles == i
+            num_total_target += has_i_target.sum() * i
+            num_detected_matched_target += detect_assign_accuracies[has_i_target].sum()
 
-        jet_full_target_accuracies = jet_accuracies / np.clip(num_particles, a_min=1.0, a_max=None)
+        target_efficiency = num_detected_matched_target / num_total_target 
 
-        print("init weight")
+        metrics["validation_efficiency"] = target_efficiency 
 
-        weights = np.ones_like(jet_full_target_accuracies)
-
-        print('calc vaja')
-
-        metrics["validation_average_jet_accuracy"] = (jet_full_target_accuracies * weights).sum() / weights.sum()
-
-        print("finishing vaja")
+        print("finishing metrics")
 
         return metrics
 
