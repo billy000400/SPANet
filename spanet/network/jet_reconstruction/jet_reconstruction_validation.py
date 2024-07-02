@@ -98,7 +98,6 @@ class JetReconstructionValidation(JetReconstructionNetwork):
         print("start validation_average_jet_accuracy")
         print("calc jfta")
         
-        target_effciency = np.zeros((batch_size), dtype=float)
         num_detected_matched_target = 0.0
         num_total_target = 0.0
         for i in range(1, num_targets + 1):
