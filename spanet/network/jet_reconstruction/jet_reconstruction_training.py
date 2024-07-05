@@ -201,12 +201,12 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         return total_loss + classification_terms
 
     def training_step(self, batch: Batch, batch_nb: int) -> Dict[str, Tensor]:
-        print("training_step starts: Begin forward")
+        # print("training_step starts: Begin forward")
         # ===================================================================================================
         # Network Forward Pass
         # ---------------------------------------------------------------------------------------------------
         outputs = self.forward(batch.sources)
-        print("Passed SPANet")
+        # print("Passed SPANet")
 
         # ===================================================================================================
         # Initial log-likelihood loss for classification task
@@ -247,19 +247,19 @@ class JetReconstructionTraining(JetReconstructionNetwork):
         # Some basic logging
         # ---------------------------------------------------------------------------------------------------
         with torch.no_grad():
-            print("logging assignment loss")
+            # print("logging assignment loss")
             for name, l in zip(self.training_dataset.assignments, assignment_loss):
                 self.log(f"loss/{name}/assignment_loss", l, sync_dist=True)
 
-            print("logging detectioin loss")
+            # print("logging detectioin loss")
             for name, l in zip(self.training_dataset.assignments, detection_loss):
                 self.log(f"loss/{name}/detection_loss", l, sync_dist=True)
 
-            print("check nan")
+            # print("check nan")
             if torch.isnan(assignment_loss).any():
                 raise ValueError("Assignment loss has diverged!")
 
-            print("check inf")
+            # print("check inf")
             if torch.isinf(assignment_loss).any():
                 raise ValueError("Assignment targets contain a collision.")
 
@@ -293,5 +293,5 @@ class JetReconstructionTraining(JetReconstructionNetwork):
 
         self.log("loss/total_loss", total_loss.sum(), sync_dist=True)
 
-        print("Returning from train_step")
+        # print("Returning from train_step")
         return total_loss.mean()
