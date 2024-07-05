@@ -166,7 +166,7 @@ def tune_spanet(
         ray_trainer,
         param_space={"train_loop_config": config},
         tune_config=tune.TuneConfig(
-            metric="validation_efficiency",
+            metric="val_efficiency",
             mode="max",
             scheduler=scheduler,
             search_alg=HyperOptSearch(),
