@@ -137,6 +137,25 @@ class Options(Namespace):
         self.linear_prelu_activation: bool = True
 
         # =========================================================================================
+        # Pairwise Interaction Options (Particle Transformer-style)
+        # =========================================================================================
+
+        # Enable pairwise interaction features in attention mechanism.
+        # When True, uses JetReconstructionModelWithPairwise instead of JetReconstructionModel.
+        self.use_pairwise_interactions: bool = False
+
+        # Number of pairwise features to compute between particle pairs.
+        # Default 4: ln(kT), ln(z), ln(deltaR), ln(m^2)
+        self.num_pairwise_features: int = 4
+
+        # Hidden dimension for pairwise feature embedding MLP.
+        self.pairwise_embedding_dim: int = 8
+
+        # Which SEQUENTIAL input source to use for pairwise features.
+        # Empty string means auto-detect the first SEQUENTIAL input.
+        self.pairwise_input_source: str = ""
+
+        # =========================================================================================
         # Dataset Options
         # =========================================================================================
 
